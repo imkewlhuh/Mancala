@@ -13,7 +13,7 @@ let p2Score = document.getElementById('p2score');
 let message = document.getElementById('message');
 message.addEventListener('click', function start() {
     playGame();
-})
+}, {once: true})
 
 // let p1name = prompt("Player 1 Name:");
 // let p2name = prompt("Player 2 Name:");
@@ -31,9 +31,7 @@ class Player {
 class Player1 extends Player {
     turn(space) {
         let player = p1Row;
-        if (space > 5) {
-            console.log("Invalid space!");
-        } else {
+
             let moves = player[space].innerText;
             player[space].innerText = '';
             for (let i = moves.length; i > 0; i--) {
@@ -47,28 +45,36 @@ class Player1 extends Player {
                     player = p2Row;
                 } 
                 player[space].innerText += 'o';
-                if (i === 1 && space < 6 && player === p1Row && player[space].innerText === 'o' && p2RowFwd[space].innerText != '') {
+                if (emptySpaces(p1Row) === 5 || emptySpaces(p2Row) === 5) {
+                    endGame()
+                } else if (i === 1 && space < 6 && player === p1Row && player[space].innerText === 'o' && p2RowFwd[space].innerText != '') {
                     let capture = player[space].innerText;
                     player[space].innerText = '';
                     capture += p2RowFwd[space].innerText;
                     p2RowFwd[space].innerText = '';
                     p1Row[6].innerText += capture;
+                    message.innerText = `${this.name} captured ${capture.length - 1} piece(s)! ${p2.name}'s turn.`;
+                    move(p2, p2buttons, p2Row);
+                } else if (i === 1 && space === 6 && player === p1Row) {
+                    message.innerText = `${this.name} ended in their pot! Take another turn. Click here to confirm.`;
+                    message.addEventListener('click', function goAgain() {
+                        move(p1, p1buttons, p1Row);
+                    }, {once: true})
+                } else {
+                    message.innerText = `${p2.name}'s turn.`;
+                    move(p2, p2buttons, p2Row);
                 }
                 let score = p1Pot.innerText;
                 this.score = score.length;
                 p1Score.innerText = `${p1.name} Score: ${p1.score}`;
-
             }
         }
     }
-}
 
 class Player2 extends Player {
     turn(space) {
         let player = p2Row;
-        if (space > 5) {
-            console.log("Invalid space!");
-        } else {
+
             let moves = player[space].innerText;
             player[space].innerText = '';
             for (let i = moves.length; i > 0; i--) {
@@ -82,21 +88,31 @@ class Player2 extends Player {
                     player = p1Row;
                 } 
                 player[space].innerText += 'o';
-                if (i === 1 && space < 6 && player === p2Row && player[space].innerText === 'o' && p1RowRvs[space].innerText != '') {
+                if (emptySpaces(p1Row) === 5 || emptySpaces(p2Row) === 5) {
+                    endGame()
+                } else if (i === 1 && space < 6 && player === p2Row && player[space].innerText === 'o' && p1RowRvs[space].innerText != '') {
                     let capture = player[space].innerText;
                     player[space].innerText = '';
                     capture += p1RowRvs[space].innerText;
                     p1RowRvs[space].innerText = '';
                     p2Row[6].innerText += capture;
+                    message.innerText = `${this.name} captured ${capture.length - 1} piece(s)! ${p1.name}'s turn.`;
+                    move(p1, p1buttons, p1Row);
+                } else if (i === 1 && space === 6 && player === p2Row) {
+                    message.innerText = `${this.name} ended in their pot! Take another turn. Click here to confirm.`;
+                    message.addEventListener('click', function goAgain() {
+                        move(p2, p2buttons, p2Row);
+                    }, {once: true})
+                } else {
+                    message.innerText = `${p1.name}'s turn.`;
+                    move(p1, p1buttons, p1Row);
                 }
                 let score = p2Pot.innerText;
                 this.score = score.length;
                 p2Score.innerText = `${p2.name} Score: ${p2.score}`;
-
             }
         }
     }
-}
 
 let p1 = new Player1('bebo');
 let p2 = new Player2('alex');
@@ -110,53 +126,50 @@ let p2buttons = Array.from(document.querySelectorAll('.p2buttons'));
 p2buttons = p2buttons.reverse();
 
 let played = false;
+
 function move(player, buttons, row) {
     if (played) {
-    if(player === p1) {
-        for (let b = 0; b < buttons.length; b++) {
-            let button = buttons[b];
-            button.appendChild(row[b]);
-            board.insertBefore(button, null);
-        }} else {
+        if(player === p1) {
+            for (let b = 0; b < buttons.length; b++) {
+                let button = buttons[b];
+                button.appendChild(row[b]);
+                board.insertBefore(button, null);
+            }
+        } else {
             for (let b = buttons.length - 1; b > -1; b--) {
                 let button = buttons[b];
-                button.appendChild(row[b])
-                board.insertBefore(button, p1Pot)
+                button.appendChild(row[b]);
+                board.insertBefore(button, p1Pot);
             }
         }
+        played = false;
     }
     for (let i = 0; i < buttons.length; i++) {
-        let button = buttons[i];
-        button.addEventListener('click', function play() {
-            player.turn(i);
-            for (let j = 0; j < buttons.length; j++) {
-                let button = buttons[j];
-                button.parentNode.replaceChild(row[j], button);
-                played = true;
-            } 
-        });
+            let button = buttons[i];
+            button.addEventListener('click', function play() {
+                if (row[i].innerText === '') {
+                    return null;
+                } else {
+                    player.turn(i);
+                    for (let j = 0; j < buttons.length; j++) {
+                        let button = buttons[j];
+                        button.parentNode.replaceChild(row[j], button);
+                        played = true;
+                    }
+                }    
+            });
     }
 }
-// function move(player, row) {
-//     for (let i = 0; i < row.length; i++) {
-//         let button = row[i];
-//         button.addEventListener('click', function play() {
-//             player.turn(i);
-//             for (let i = 0; i < row.length; i++) {
-//                 button = row[i];
-//                 button.removeEventListener('click', play);
-//             }
-//         });
-//     }
-// }
 
-// let test = document.querySelector('.button');
-// let t2 = document.getElementById('ten');
-// test.addEventListener('click', function ply() {
-//     p1.turn(3);
-//     p1.turn(0);
-//     test.parentNode.replaceChild(t2, test);
-// })
+function emptySpaces(row) {
+    let spaces = 0;
+    for (let i = 0; i < 6; i++) {
+        if (row[i].innerText === '') {
+            spaces++;
+        }
+    }
+    return spaces;
+}
 
 function playGame() {
     p1Score.innerText = `${p1.name} Score: ${p1.score}`;
@@ -167,29 +180,21 @@ function playGame() {
     } else {
         message.innerText = `${p2.name} goes first! Choose your space. (Top row)`;
         move(p2, p2buttons, p2Row);
-    }     
+    }
 }
 
-// function move(player, space) {
-//     if (space > 5) {
-//         console.log("Invalid space!");
-//     } else {
-//     let moves = player[space].innerText;
-//     player[space].innerText = '';
-//     for (let i = moves.length; i > 0; i--) {
-//         space++;
-//         if (space > 6) {
-//             space -= 7; 
-//             player = p2Row;
-//         }
-//         player[space].innerText += 'o';
-//         if (i === 1 && player[space].innerText === 'o' && space < 6) {
-//             let capture = player[space].innerText;
-//             player[space].innerText = '';
-//             capture += p2RowFwd[space].innerText;
-//             p2RowFwd[space].innerText = '';
-//             p1Row[6].innerText += capture;
-//         }
-//     }    
-// }
-// }
+function endGame() {
+    for (let i = 0; i < p1Row.length; i++) {
+        let collect = p1Row[i].innerText;
+        p1Pot.innerText += collect;
+    }
+    for (let j = 0; j < p2Row.length; j++) {
+        let collect = p2Row[i].innerText;
+        p2Pot.innerText += collect;
+    }
+    if (p1.score > p2.score) {
+        message.innerText = `Game Over! ${p1.name} has won with ${p1.score} pieces.`;
+    } else {
+        message.innerText = `Game Over! ${p2.name} has won with ${p2.score} pieces.`;
+    }
+}
