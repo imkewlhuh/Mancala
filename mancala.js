@@ -57,6 +57,7 @@ class Player1 extends Player {
                     message.innerText = `${this.name} ended in their pot! Take another turn. Click here to confirm.`;
                     message.addEventListener('click', function goAgain() {
                         move(p1, p1buttons, p1Row);
+                        message.innerText = `${p1.name}'s turn. Choose your space (Bottom row).`
                     }, {once: true})
                 } else if (i === 1) {
                     move(p2, p2buttons, p2Row);
@@ -101,6 +102,7 @@ class Player2 extends Player {
                     message.innerText = `${this.name} ended in their pot! Take another turn. Click here to confirm.`;
                     message.addEventListener('click', function goAgain() {
                         move(p2, p2buttons, p2Row);
+                        message.innerText = `${p2.name}'s turn. Choose your space (Top row).`
                     }, {once: true})
                 } else if (i === 1) {
                     move(p1, p1buttons, p1Row);
