@@ -165,8 +165,10 @@ function endGame() {
     }
     if (p1.score > p2.score) {
         message.innerText = `Game Over! ${p1.name} has won with ${p1.score} pieces.`;
-    } else {
+    } else if (p2.score > p1.score) {
         message.innerText = `Game Over! ${p2.name} has won with ${p2.score} pieces.`;
+    } else if (p1.score = p2.score) {
+        message.innerText = `Game Over.. It's a tie! Congratulations, you wasted your time.`
     }
 }
 
